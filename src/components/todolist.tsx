@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Card,
@@ -11,10 +11,21 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
-export default function TodoList() {
-  const { data: todoData, isLoading, isError } = useQuery<any>({
+export default function TodoList({ handleAddTask, newTasks, }) {
+  const addNewTask = () => {
+    fetch('https://dummyjson.com/products/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: "bmw",
+      })
+    })
+    .then(res => res.json())
+    .then(console.log);
+  };
+
+  const { data: todoData, isLoading, isError,isFetching } = useQuery<any>({
     queryKey: ['todos'],
     queryFn: () => fetch("https://dummyjson.com/products").then(res => res.json())
   });
@@ -27,7 +38,13 @@ export default function TodoList() {
     return <div>Error...</div>;
   }
 
+  if (isFetching) {
+    return <div>fetching</div>;
+  }
+
+  console.log(isLoading, isError, isFetching)
   return (
+    <>
     <div className="flex flex-col w-[500px] ml-[50px] mt-[100px] fixed">
       <Card>
         <CardHeader>
@@ -41,11 +58,21 @@ export default function TodoList() {
               {product.title}
             </div>
           ))}
+         {newTasks.map((task) => (
+          <div key={task.id} className="flex items-center space-x-2">
+            <Checkbox />
+            {task.title}
+          </div>
+         ))}
+
         </CardContent>
         <CardFooter>
-          <Button className="ml-[125px]">Add Todo</Button>
+          <Button  className="ml-[125px]">
+            Add Todo
+          </Button>
         </CardFooter>
       </Card>
     </div>
+    </>
   );
 }
